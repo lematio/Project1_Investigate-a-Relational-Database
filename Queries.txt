@@ -1,0 +1,99 @@
+ Query 1
+
+SELECT DISTINCT(fil.title) Title_film,
+       categ.name Category_name,
+       COUNT(r.rental_date) OVER (PARTITION BY fil.title ORDER BY fil.title) AS Count_rental
+FROM film fil
+JOIN film_category ficat
+ON fil.film_id = ficat.film_id
+JOIN category categ
+ON ficat.category_id = categ.category_id
+JOIN inventory i
+ON fil.film_id = i.film_id
+JOIN rental r
+ON i.inventory_id = r.inventory_id
+WHERE categ.name = 'Music'
+	  OR categ.name = 'Animation'
+      OR categ.name = 'Classics'
+      OR categ.name = 'Children'
+      OR categ.name = 'Family'
+      OR categ.name = 'Comedy'      
+ORDER BY categ.name, fil.title;
+
+
+Query 2
+
+SELECT ca_name, 
+       quartile_standard,
+       COUNT(*)
+FROM 
+(SELECT film_title,
+       ca_name,
+       duration,
+       NTILE(4) OVER (ORDER BY duration) AS  quartile_standard
+FROM
+(SELECT fa.title film_title,
+ 	   fa.rental_duration duration,
+       ca.name ca_name
+      
+FROM film fa
+JOIN film_category fc
+ON fa.film_id = fc.film_id
+JOIN category ca
+ON fc.category_id = ca.category_id
+WHERE ca.name = 'Children'
+      OR ca.name = 'Classics'      
+      OR ca.name = 'Family'
+      OR ca.name = 'Comedy'
+ 	  OR ca.name = 'Animation'
+      OR ca.name = 'Music') t1
+ORDER BY duration) t2
+GROUP BY 1,2
+ORDER BY 1,2;
+
+
+Query 3
+
+
+ SELECT 
+	DATE_PART('month',r.rental_date) AS month,
+       DATE_PART('year',r.rental_date) AS year,
+       sto.store_id,
+
+sto.store_id,
+       COUNT(*) AS Total_Trental 
+FROM rental r
+JOIN payment p
+ON r.rental_id = p.rental_id
+JOIN staff sta
+ON p.staff_id = sta.staff_id
+JOIN store sto
+ON sta.store_id = sto.store_id
+GROUP BY sto.store_id, month, year
+
+
+Query 4
+
+WITH t1 AS (
+SELECT first_name||' '||last_name AS name,
+       SUM(pa.amount) AS sum_of_amount
+FROM customer cust
+JOIN payment pa
+ON cust.customer_id = pa.customer_id
+GROUP BY 1
+ORDER BY  2 DESC
+LIMIT 10)
+
+SELECT name,
+       sum_of_amount
+FROM t1;
+
+
+
+
+
+
+
+
+
+
